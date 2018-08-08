@@ -211,7 +211,7 @@
 // Load from local file
 - (void)_performLoadUnderlyingImageAndNotifyWithWebURL:(NSURL *)url {
     @try {
-        [[SDWebImageDownloader sharedDownloader] downloadImageWithURL:url options:0 progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
+        [[SDWebImageManager sharedManager] loadImageWithURL:url options:SDWebImageRetryFailed progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
             if (expectedSize > 0) {
                 float progress = receivedSize / (float)expectedSize;
                 NSDictionary* dict = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -219,7 +219,8 @@
                                       self, @"photo", nil];
                 [[NSNotificationCenter defaultCenter] postNotificationName:MWPHOTO_PROGRESS_NOTIFICATION object:dict];
             }
-        } completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, BOOL finished) {
+
+        } completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, SDImageCacheType cacheType, BOOL finished, NSURL * _Nullable imageURL) {
             if (error) {
                 MWLog(@"SDWebImage failed to download image: %@", error);
             }
@@ -230,6 +231,7 @@
             });
 
         }];
+        
     } @catch (NSException *e) {
         MWLog(@"Photo from web: %@", e);
         _webImageOperation = nil;
